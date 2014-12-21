@@ -9,7 +9,7 @@ Ext.define('App.model.IPDataGridModel', {
 	fields: [
 		{name: 'id', type: 'number'},
 		{name: 'owner', type: 'string'},
-		{name: 'ip', type: 'string'},
+		{name: 'ip', type: 'number'},
 		{name: 'virus'},
 		{name: 'longitude', type: 'number'},
 		{name: 'latitude', type: 'number'},

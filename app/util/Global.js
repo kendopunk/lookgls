@@ -5,14 +5,35 @@
  */
 Ext.define('App.util.Global', {
 	statics: {
-		titlePanelHeight: 55,
 		
-		daaPanelHeight: 55,
-		
-		westPanelWidth: 235,
-		
-		defaultInfoMessage: 'Demonstrating various visualization libraries in ExtJS.  Heavy on the D3 side.',
-		
+		stub: {
+			owners: [{
+				fullName: 'TMQ Financial',
+				shortName: 'TMQ'
+			}, {
+				fullName: 'Anderson Services',
+				shortName: 'Anderson'
+			}],
+			
+			ipFunctions: [{
+				name: 'mail server'
+			}, {
+				name: 'web server'
+			}, {
+				name: 'ftp server'
+			}],
+			
+			viruses: [{
+				name: 'APT1'
+			}, {
+				name: 'Botnet'
+			}, {
+				name: 'SPAM'
+			}, {
+				name: 'Steal Creds'
+			}]
+		},
+	
 		sortUtils: {
 			dynamicSort: function(property) {
 				return function(obj1, obj2) {
@@ -43,10 +64,6 @@ Ext.define('App.util.Global', {
 		},
 		
 		svg: {
-			currencyTickFormat: function(d) {
-				return Ext.util.Format.currency(d);
-			},
-			
 			decimalTickFormat: function(d) {
 				return Ext.util.Format.number(d, '0,000.0');
 			},
@@ -55,22 +72,8 @@ Ext.define('App.util.Global', {
 				return Ext.util.Format.number(d, '0,000');
 			},
 			
-			secondsToRunTime: function(d, i) {
-				var min = Math.floor(parseInt(d)/60);
-				var sec = parseInt(d)%60;
-				
-				if(sec <= 9) {
-					sec = '0' + sec;
-				}
-				return min + ':' + sec;
-			},
-			
 			percentTickFormat: function(d) {
 				return Ext.util.Format.number(d, '0,000.0') + '%';
-			},
-			
-			wholeDollarTickFormat: function(d) {
-				return Ext.util.Format.currency(d, false, '0', false);
 			},
 			
 			colorSchemes: [{
