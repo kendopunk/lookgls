@@ -29,19 +29,16 @@ Ext.application({
 		/** scope **/
 		var me = this;
 		
-		/** create the universal message bus / event relay **/
-		App.eventRelay = Ext.create('App.util.MessageBus');
-		
 		me.mapPanel = Ext.create('App.view.portal.WorldMapPanel', {
-			region: 'center',
-			calculatedWidth: Math.floor(Ext.getBody().getViewSize().width * .65),
-			calculatedHeight: Math.floor(Ext.getBody().getViewSize().height * .7)
+			region: 'west',
+			width: Math.floor(Ext.getBody().getViewSize().width * .65),
+			height: Math.floor(Ext.getBody().getViewSize().height * .7)
 		});
 			
 		me.vizPanel = Ext.create('App.view.portal.StackedBarPanel', {
-			region: 'east',
-			width: Math.floor(Ext.getBody().getViewSize().width * .35),
-			height: Math.floor(Ext.getBody().getViewSize().height * .7)
+			region: 'center',
+			calculatedWidth: Math.floor(Ext.getBody().getViewSize().width * .35),
+			calculatedHeight: Math.floor(Ext.getBody().getViewSize().height * .7)
 		});
 			
 		me.gridPanel = Ext.create('App.view.portal.IPDataGridPanel', {

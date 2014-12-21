@@ -111,6 +111,8 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 	renderMap: function() {
 		var me = this;
 		
+		console.log('in renderMap()...');
+		
 		me.gPath.append('path')
 			.datum(me.gPathraticule)
 			.attr('class', 'graticule')
