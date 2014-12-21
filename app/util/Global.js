@@ -6,6 +6,22 @@
 Ext.define('App.util.Global', {
 	statics: {
 		
+		ip: {
+			genRandomLongIp: function() {
+				var min = 1677721600, max = 4294967295;
+				return Math.floor(Math.random() * (max-min+1) + min);
+			},
+			
+			longToIp: function(num) {
+				var part1 = num & 255;
+				var part2 = ((num >> 8) & 255);
+				var part3 = ((num >> 16) & 255);
+				var part4 = ((num >> 24) & 255);
+				
+				return part4 + "." + part3 + "." + part2 + "." + part1;
+			}
+		},
+		
 		stub: {
 			owners: [{
 				fullName: 'TMQ Financial',
@@ -24,13 +40,17 @@ Ext.define('App.util.Global', {
 			}],
 			
 			viruses: [{
-				name: 'APT1'
+				name: 'APT1',
+				type: 'Bot'
 			}, {
-				name: 'Botnet'
+				name: 'Botnet',
+				type: 'Bot',
 			}, {
-				name: 'SPAM'
+				name: 'Spam',
+				type: 'Spam',
 			}, {
-				name: 'Steal Creds'
+				name: 'StealCreds',
+				type: 'Trojan'
 			}]
 		},
 	

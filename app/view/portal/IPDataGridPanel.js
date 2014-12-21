@@ -13,14 +13,13 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 	],
 	
 	plain: true,
-	viewConfig: {
-		autoFill: true
-	},
 	
 	initComponent: function() {
 		var me = this;
 		
-		me.dataFeedOnCls = 'icon-datafeed',
+		me.baseData = [],
+			me.dataFeedOnCls = 'icon-datafeed',
+			me.dataAppend = false,
 			me.dataFeedOffCls = 'icon-stop',
 			me.dataFeedRunning = false,
 			me.eventRelay = Ext.create('App.util.MessageBus');
@@ -37,7 +36,7 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 			model: 'App.model.IPDataGridModel',
 			data: [],
 			sorters: {
-				property: 'id',
+				property: 'timestamp',
 				direction: 'DESC'
 			},
 			proxy: {
@@ -49,63 +48,51 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		// columns
 		//////////////////////////////////////////////////
 		me.columns = [{
-			header: 'ID',
-			dataIndex: 'id',
-			flex: 1
-		}, {
-			header: 'IP',
-			dataIndex: 'ip',
-			flex: 1
-		}, {
 			header: 'Owner',
 			dataIndex: 'owner',
-			flex: 2
+			width: 200
 		}, {
-			header: 'Function',
-			dataIndex: 'ipFunction',
-			flex: 1
+			header: 'Trojans',
+			dataIndex: 'trojanCount',
+			renderer: me.countRenderer
 		}, {
-			header: 'Virus(es)',
-			dataIndex: 'virus',
-			flex: 2,
-			renderer: function(v) {
-				return Ext.Array.sort(v).join(', ');
-			}
+			header: 'Bots',
+			dataIndex: 'botCount',
+			renderer: me.countRenderer
 		}, {
-			header: 'Long.',
-			dataIndex: 'longitude',
-			flex: 1
+			header: 'Spam',
+			dataIndex: 'spamCount',
+			renderer: me.countRenderer
 		}, {
-			header: 'Lat.',
-			dataIndex: 'latitude',
-			flex: 1
-		}];
+			header: 'FTP Servers',
+			dataIndex: 'ftpServerCount',
+			renderer: me.countRenderer
+		}, {
+			header: 'Mail Servers',
+			dataIndex: 'mailServerCount',
+			renderer: me.countRenderer
+		}, {
+			header: 'Web Servers',
+			dataIndex: 'webServerCount',
+			renderer: me.countRenderer
+		}]
 		
 		//////////////////////////////////////////////////
 		// data feed task
 		//////////////////////////////////////////////////
 		me.dataFeedTask = {
-			run: function(append) {
-				me.genData(append);
+			run: function() {
+				me.genData();
 			},
 			interval: 5000,
 			scope: me
 		};
 		
-		/*function intToIP(int) {
-    var part1 = int & 255;
-    var part2 = ((int >> 8) & 255);
-    var part3 = ((int >> 16) & 255);
-    var part4 = ((int >> 24) & 255);
-
-    return part4 + "." + part3 + "." + part2 + "." + part1;
-}*/
-		
 		//////////////////////////////////////////////////
 		// toolbar components
 		//////////////////////////////////////////////////
 		me.feedButton = Ext.create('Ext.button.Button', {
-			text: 'Data Feed',
+			text: 'IP Data Feed',
 			disabled: true,
 			iconCls: me.dataFeedOffCls,
 			handler: function(btn, evt) {
@@ -140,12 +127,103 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 	initFeed: function() {
 		var me = this;
 		
-		me.feedButton.setDisabled(false);
-		me.feedStatus.setDisabled(false);
 		me.feedButton.setIconCls(me.dataFeedOnCls);
+		
 		me.feedStatus.setText('RUNNING');
 		
-		//Ext.TaskManager.start(me.dataFeedTask);
+		me.loadFreshData();
+	},
+	
+	loadFreshData: function() {
+		var me = this;
+		
+		Ext.Ajax.request({
+			url: 'data/data.json',
+			method: 'GET',
+			success: function(response) {
+				var resp = Ext.decode(response.responseText);
+				
+				me.getStore().loadRawData(me.normalizeThreatData(resp.threatData), false);
+			},
+			callback: function() {
+				setTimeout(function() {
+					Ext.TaskManager.start(me.dataFeedTask);
+					
+					// enable the buttons here
+					
+					me.feedButton.setDisabled(false);
+		
+		
+		me.feedStatus.setDisabled(false);
+		
+		me.dataFeedRunning = true;
+		
+		
+				}, 5000, me);
+			},
+			scope: me
+		});
+	},
+	
+	normalizeThreatData: function(dat) {
+		var me = this;
+			
+		// base data empty
+		if(me.baseData.length == 0) {
+			Ext.each(Ext.Array.sort(Ext.Array.unique(Ext.Array.map(dat, function(d) {
+				return d.owner;
+			}))), function(item) {
+				me.baseData.push({
+					owner: item,
+					botCount: 0,
+					spamCount: 0,
+					trojanCount: 0,
+					mailServerCount: 0,
+					ftpServerCount: 0,
+					webServerCount: 0
+				});
+			}, me);
+		}
+		
+		Ext.each(me.baseData, function(r) {
+			Ext.each(dat, function(d) {
+				r.botCount += me.countVirus(d, 'Bot', r.owner);
+				r.spamCount += me.countVirus(d, 'Spam', r.owner);
+				r.trojanCount += me.countVirus(d, 'Trojan', r.owner);
+				r.mailServerCount += me.countServer(d, 'mail server', r.owner);
+				r.webServerCount += me.countServer(d, 'web server', r.owner);
+				r.ftpServerCount += me.countServer(d, 'ftp server', r.owner);
+			});
+		}, me);
+		
+		return me.baseData;
+	},
+	
+	countVirus: function(data, virusType, owner) {
+		if(data.owner === owner) {
+			var count = 0;
+			var virusTarget = Ext.Array.map(Ext.Array.filter(App.util.Global.stub.viruses, function(v) {
+				return v.type === virusType
+			}), function(m) {
+				return m.name;
+			});
+			
+			Ext.each(virusTarget, function(vt) {
+				if(data.virus.indexOf(vt) >= 0) {
+					count++;
+				}
+			});
+			
+			return count;
+		}
+		return 0;
+	},
+	
+	countServer: function(data, serverType, owner) {
+		if(data.serverFunction === serverType && data.owner === owner) {
+			return 1;
+		}
+		return 0;
 	},
 	
 	/**
@@ -158,45 +236,41 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		if(me.dataFeedRunning) {
 			me.feedButton.setIconCls(me.dataFeedOffCls);
 			me.feedStatus.setText('STOPPED');
-			//Ext.TaskManager.stop(me.dataFeedTask);
+			Ext.TaskManager.stop(me.dataFeedTask);
 		} else {
 			me.feedButton.setIconCls(me.dataFeedOnCls);
 			me.feedStatus.setText('RUNNING');
-			//Ext.TaskManager.start(me.dataFeedTask);
+			Ext.TaskManager.start(me.dataFeedTask);
 		}
 		
 		me.dataFeedRunning = !me.dataFeedRunning;
 	},
 	
-	genData: function(append) {
+	/**
+ 	 * @function
+ 	 * @description Generate random IP data
+ 	 */
+	genData: function() {
 		var me = this,
-			theId;
+			ret = [];
 			
-			
-			
-		
-		if(me.getStore().getRange().length == 0) {
-			theId = 0;
-		} else {
-			theId = Ext.Array.max(Ext.Array.map(me.getStore().getRange(), function(rec) {
-				return rec.data.id;
-			})) + 1;
+		for(var i=0; i<2; i++) {
+			ret.push({
+				ip: '192.168.1.1',
+				virus: ['APT1'],
+				owner: App.util.Global.stub.owners[Math.floor(Math.random() * App.util.Global.stub.owners.length)].fullName,
+				serverFunction: App.util.Global.stub.ipFunctions[Math.floor(Math.random() * App.util.Global.stub.ipFunctions.length)].name
+			});
 		}
 		
-		var dat = [{
-			id: theId,
-			owner: 'Anderson',
-			ip: 2390483,
-			virus: ['z', 'b', 'a', 'd'],
-			longitude: 100,
-			latitude: 100,
-			ipFunction: 'mailserver'
-		}];
-		
-		//me.getStore().loadRawData(dat, append);
+		me.getStore().removeAll();
+		me.getStore().loadRawData(me.normalizeThreatData(ret), false);
 		
 		
 		
-		
+	},
+	
+	countRenderer: function(value) {
+		return Ext.util.Format.number(value, '0,000');
 	}
 });

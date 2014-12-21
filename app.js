@@ -32,18 +32,18 @@ Ext.application({
 		me.mapPanel = Ext.create('App.view.portal.WorldMapPanel', {
 			region: 'west',
 			width: Math.floor(Ext.getBody().getViewSize().width * .65),
-			height: Math.floor(Ext.getBody().getViewSize().height * .7)
+			height: Math.floor(Ext.getBody().getViewSize().height * .75)
 		});
 			
 		me.vizPanel = Ext.create('App.view.portal.StackedBarPanel', {
 			region: 'center',
 			calculatedWidth: Math.floor(Ext.getBody().getViewSize().width * .35),
-			calculatedHeight: Math.floor(Ext.getBody().getViewSize().height * .7)
+			calculatedHeight: Math.floor(Ext.getBody().getViewSize().height * .75)
 		});
 			
 		me.gridPanel = Ext.create('App.view.portal.IPDataGridPanel', {
 			region: 'south',
-			height: Math.floor(Ext.getBody().getViewSize().height * .3)
+			height: Math.floor(Ext.getBody().getViewSize().height * .25)
 		});
 		
 		Ext.create('Ext.container.Viewport', {		

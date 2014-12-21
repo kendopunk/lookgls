@@ -5,14 +5,13 @@
  */
 Ext.define('App.model.IPDataGridModel', {
 	extend: 'Ext.data.Model',
-	idProperty: 'id',
 	fields: [
-		{name: 'id', type: 'number'},
 		{name: 'owner', type: 'string'},
-		{name: 'ip', type: 'number'},
-		{name: 'virus'},
-		{name: 'longitude', type: 'number'},
-		{name: 'latitude', type: 'number'},
-		{name: 'ipFunction', type: 'string'}
+		{name: 'botCount', type: 'number'},
+		{name: 'spamCount', type: 'number'},
+		{name: 'trojanCount', type: 'number'},
+		{name: 'mailServerCount', type: 'number'},
+		{name: 'ftpServerCount', type: 'number'},
+		{name: 'webServerCount', type: 'number'}
 	]
 });
