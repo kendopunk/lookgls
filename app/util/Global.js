@@ -12,6 +12,27 @@ Ext.define('App.util.Global', {
 				return Math.floor(Math.random() * (max-min+1) + min);
 			},
 			
+			// -90 to 90
+			genRandomLatitude: function() {
+				// 80 instead of 90
+				var num = (Math.random()*80).toFixed(3);
+				if(Math.random() > .5) {
+					return num * -1;
+				}
+				return num;
+			},
+			
+			// -180 to 180
+			genRandomLongitude: function() {
+				// 170 instead of 180
+				var num = (Math.random()*170).toFixed(3);
+				if(Math.random() > .5) {
+					return num * -1;
+				}
+				return num;
+			
+			},
+			
 			longToIp: function(num) {
 				var part1 = num & 255;
 				var part2 = ((num >> 8) & 255);
@@ -31,12 +52,18 @@ Ext.define('App.util.Global', {
 				shortName: 'Anderson'
 			}],
 			
-			ipFunctions: [{
-				name: 'mail server'
+			serverFunctions: [{
+				name: 'mail server',
+				shortName: 'Mail',
+				color: '#FFCC33'
 			}, {
-				name: 'web server'
+				name: 'web server',
+				shortName: 'Web',
+				color: '#6495ED'
 			}, {
-				name: 'ftp server'
+				name: 'ftp server',
+				shortName: 'FTP',
+				color: '#C71585'
 			}],
 			
 			viruses: [{

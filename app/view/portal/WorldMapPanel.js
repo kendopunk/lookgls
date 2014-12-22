@@ -18,9 +18,20 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		var me = this;
 		
 		me.eventRelay = Ext.create('App.util.MessageBus'),
-			me.worldMapRendered = false,
-			me.rawData = null;
+			me.mousingOver = false,
+			me.rawData = [],
+			me.svg = null;
+			
+		//////////////////////////////////////////////////
+		// subscribe to IP data generation
+		//////////////////////////////////////////////////
+		me.eventRelay.subscribe('addIpDataToMap', me.renderIpData, me);
+		me.eventRelay.subscribe('mapZoomStart', function() { console.log('zoom start')}, me);
+		me.eventRelay.subscribe('mapZoomEnd', function() { console.log('zoom end')}, me);
 		
+		//////////////////////////////////////////////////
+		// toolbar components
+		//////////////////////////////////////////////////
 		me.dockedItems = [{
 			xtype: 'toolbar',
 			dock: 'top',
@@ -43,9 +54,7 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		me.canvasWidth = me.width,
 			me.canvasHeight = me.height,
 			me.panelId = '#' + me.body.id;
-			
-		
-		
+
 		// init SVG
 		me.svg = d3.select(me.panelId)
 			.append('svg')
@@ -57,6 +66,7 @@ Ext.define('App.view.portal.WorldMapPanel', {
 			svg: me.svg,
 			canvasWidth: me.canvasWidth,
 			canvasHeight: me.canvasHeight,
+			eventRelay: me.eventRelay,
 			tooltipFunction: function(d, i) {
 				return d.properties.name;
 			}
@@ -67,107 +77,57 @@ Ext.define('App.view.portal.WorldMapPanel', {
 	
 	/**
  	 * @function
+ 	 * @description Utility method to indicate map has been fully rendered
  	 */
 	panelReady: function() {
 		var me = this;
-		
 		me.eventRelay.publish('mapRendered', true);
-		
-		
-		/*Ext.Ajax.request({
-			url: 'data/population_metrics.json',
-			method: 'GET',
-			success: function(response, options) {
-				var resp = Ext.decode(response.responseText);
-				me.rawData = resp;
-				me.renderMetricOverlay();
-			},
-			callback: function() {
-				me.metricCombo.setDisabled(false);
-			},
-			scope: me
-		});*/
 	},
 	
 	/**
-	 * @function
-	 * @description Colorize/revert relevant paths.
-	 */
-	renderMetricOverlay: function() {
+ 	 * @function
+ 	 */
+	renderIpData: function(dat) {
 		var me = this;
-		
-		var currentMetric = me.currentMetric,
-			dat = me.rawData.data[currentMetric],
-			map = dat.map(function(d) { return d.country; });
-		
-		var opacityScale = d3.scale.linear()
-			.domain([
-				d3.min(dat, function(d) { return d.value;}),
-				d3.max(dat, function(d) { return d.value;})
-			])
-			.range([.3, 1]);
+	
+		Ext.each(dat, function(d) {
+			me.rawData.push(d);
 			
-		var countrySelection = me.worldMap.gPath.selectAll('.country');
-		
-		////////////////////////////////////////
-		// "go" countries (color on)
-		////////////////////////////////////////
-		var go = countrySelection.filter(function(e, j) {
-			return map.indexOf(e.properties.name) >= 0;
-		});
-		
-		// add "active" class
-		go.classed('active', true);
-		
-		go.transition()
-			.duration(250)
-			.style('fill', me.currentColor)
-			.style('opacity', function(d, i) {
-				var op;
-				
-				var rating = dat.forEach(function(item) {
-					if(item.country == d.properties.name) {
-						op = opacityScale(item.value);
-					}
+			me.svg.append('circle')
+				.datum(d)
+				.attr('cx', function(d) {
+					return me.worldMap.getMapCoords(d.longitude, d.latitude)[0];
+				})
+				.attr('cy', function(d) {
+					return me.worldMap.getMapCoords(d.longitude, d.latitude)[1];
+				})
+				.on('mouseover', function() {
+					me.mousingOver = true;
+				})
+				.on('mouseout', function() {
+					me.mousingOver = false;
+				})
+				.attr('r', 4)
+				.style('stroke', 'black')
+				.style('stroke-width', .75)
+				.style('fill', function(d) {
+					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
+						return sf.name == d.serverFunction;
+					})[0].color;
 				});
-				
-				return op || .2;
-			});
-			
-		go.call(d3.helper.tooltip().text(function(d, i) {
-			var match = dat.filter(function(e, j) {
-				return e.country == d.properties.name;
-			});
-			if(match.length > 0) {
-				if(currentMetric == 'population') {
-					return '<b>' + match[0].country + '</b><br>'
-						+ Ext.util.Format.number(match[0].value, '0,000');
-				} else if(currentMetric == 'populationGrowth') {
-					return '<b>' + match[0].country + '</b><br>'
-						+ Ext.util.Format.number(match[0].value, '0,000.00')
-						+ '%';
-				} else {
-					return '<b>' + match[0].country + '</b><br>'
-						+ Ext.util.Format.number(match[0].value, '0,000.00');
-				}
-			}
-			return d.properties.name;
-		}));
+		}, me);
 		
-		////////////////////////////////////////
-		// "no go" countries" (color off)
-		////////////////////////////////////////
-		var nogo = countrySelection.filter(function(e, j) {
-			return map.indexOf(e.properties.name) < 0;
-		});
-		
-		// remove "active" class
-		//nogo.classed('active', false);
-		
-		nogo.style('fill', me.worldMap.countryDefaults.fill)
-			.classed('active', false)
-			.style('opacity', 1);
-		
-		nogo.call(d3.helper.tooltip().text(me.worldMap.tooltipFunction));
+		// conflicts with active tooltipDiv
+		if(!me.mousingOver) {
+			me.svg.selectAll('circle').call(d3.helper.tooltip().text(function(d, i) {
+				return '<b>' + d.ip + '</b><br>'
+					+ d.owner + '<br>'
+					+ d.serverFunction + '<br>'
+					+ d.latitude + '/' + d.longitude + '<br>'
+					+ '['
+					+ Ext.Array.sort(d.virus).join(', ')
+					+ ']';
+			}));
+		}
 	}
 });

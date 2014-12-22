@@ -16,6 +16,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 	canvasWidth: 500,
 	centered: null,
 	chartInitialized: false,
+	circleData: [],
 	countryDefaults: {
 		fill: '#BBB',
 		fillOver: '#999',
@@ -23,6 +24,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		strokeWidth: 1,
 		strokeOver: 'white'
 	},
+	eventRelay: null,
 	gPath: null,
 	graticule: d3.geo.graticule(),
 	panel: null,
@@ -59,6 +61,12 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		
 		me.zoom = d3.behavior.zoom()
 			.scaleExtent([1, 9])
+			.on('zoomstart', function() {
+				me.eventRelay.publish('mapZoomStart');
+			})
+			.on('zoomend', function() {
+				me.eventRelay.publish('mapZoomEnd');
+			})
 			.on('zoom', function() {
 				var t = d3.event.translate,
 					s = d3.event.scale,
@@ -190,6 +198,10 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 				; // pass
 			}
 		}
+	},
+	
+	getMapCoords: function(long, lat) {
+		return this.projection([long, lat]);
 	},
 	
 	/**

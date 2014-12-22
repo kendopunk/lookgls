@@ -4,21 +4,21 @@
 		"virus": ["APT1", "Botnet"],
 		"owner": "TMQ Financial",
 		"serverFunction": "web server",
-		"longitude": 100,
-		"latitude": 100
+		"latitude": 39.290385,
+		"longitude": -76.612189
 	}, {
 		"ip": "10.223.75.186",
 		"virus": ["Botnet", "Spam", "StealCreds"],
 		"owner": "Anderson Services",
 		"serverFunction": "ftp server",
-		"longitude": 100,
-		"latitude": 100
+		"latitude": 39.758948,
+		"longitude": -84.191607 
 	}, {
 		"ip": "10.122.29.151",
 		"virus": ["Spam"],
 		"owner": "Anderson Services",
 		"serverFunction": "mail server",
-		"longitude": 100,
-		"latitude": 100
+		"latitude": 38.051009,
+		"longitude": 114.463166
 	}]
 }

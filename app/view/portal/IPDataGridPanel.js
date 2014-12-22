@@ -25,7 +25,7 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 			me.eventRelay = Ext.create('App.util.MessageBus');
 			
 		//////////////////////////////////////////////////
-		// event relay subscriptions
+		// subscribe to the map being rendered
 		//////////////////////////////////////////////////
 		me.eventRelay.subscribe('mapRendered', me.initFeed, me);
 		
@@ -35,10 +35,16 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		me.store = Ext.create('Ext.data.Store', {
 			model: 'App.model.IPDataGridModel',
 			data: [],
-			sorters: {
-				property: 'timestamp',
+			sorters: [{
+				property: 'trojanCount',
 				direction: 'DESC'
-			},
+			}, {
+				property: 'botCount',
+				direction: 'DESC'
+			}, {
+				property: 'spamCount',
+				direction: 'DESC'
+			}],
 			proxy: {
 				type: 'memory'
 			}
@@ -110,7 +116,7 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 			xtype: 'toolbar',
 			dock: 'top',
 			items: [
-				{xtype: 'tbspacer', width: 5},
+				{xtype: 'tbspacer', width: 10},
 				me.feedButton,
 				{xtype: 'tbspacer', width: 5},
 				me.feedStatus
@@ -128,14 +134,7 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		var me = this;
 		
 		me.feedButton.setIconCls(me.dataFeedOnCls);
-		
 		me.feedStatus.setText('RUNNING');
-		
-		me.loadFreshData();
-	},
-	
-	loadFreshData: function() {
-		var me = this;
 		
 		Ext.Ajax.request({
 			url: 'data/data.json',
@@ -143,29 +142,30 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 			success: function(response) {
 				var resp = Ext.decode(response.responseText);
 				
-				me.getStore().loadRawData(me.normalizeThreatData(resp.threatData), false);
+				me.getStore().loadRawData(me.buildThreatData(resp.threatData), false);
+				
+				// add to map
+				me.eventRelay.publish('addIpDataToMap', resp.threatData);
 			},
 			callback: function() {
 				setTimeout(function() {
 					Ext.TaskManager.start(me.dataFeedTask);
 					
-					// enable the buttons here
-					
 					me.feedButton.setDisabled(false);
-		
-		
-		me.feedStatus.setDisabled(false);
-		
-		me.dataFeedRunning = true;
-		
-		
+					me.feedStatus.setDisabled(false);
+					me.dataFeedRunning = true;
 				}, 5000, me);
 			},
 			scope: me
 		});
 	},
 	
-	normalizeThreatData: function(dat) {
+	/**
+ 	 * @function
+ 	 * @description Take data in the raw JSON format and make it
+ 	 * consumable by the grid
+ 	 */
+	buildThreatData: function(dat) {
 		var me = this;
 			
 		// base data empty
@@ -199,6 +199,10 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		return me.baseData;
 	},
 	
+	/**
+ 	 * @function
+ 	 * @description Count the number of viruses in a record (owner match)
+ 	 */
 	countVirus: function(data, virusType, owner) {
 		if(data.owner === owner) {
 			var count = 0;
@@ -219,6 +223,10 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		return 0;
 	},
 	
+	/**
+	 * @function
+	 * @description Count the number of servers in a record (owner match)
+	 */
 	countServer: function(data, serverType, owner) {
 		if(data.serverFunction === serverType && data.owner === owner) {
 			return 1;
@@ -248,28 +256,42 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 	
 	/**
  	 * @function
- 	 * @description Generate random IP data
+ 	 * @description Generate random IP data with random viruses, random server type
+ 	 * random owner and random long/lat
  	 */
 	genData: function() {
 		var me = this,
-			ret = [];
+			ret = [],
+			vArrLen = App.util.Global.stub.viruses.length;
 			
 		for(var i=0; i<2; i++) {
+		
+			// try to pluck random number of viruses
+			var numViruses = Math.floor(Math.random() * vArrLen) + 1, vdat = [];
+			for(var j=0; j<=numViruses; j++) {
+				vdat.push(App.util.Global.stub.viruses[Math.floor(Math.random() * vArrLen)].name);
+			}
+		
 			ret.push({
-				ip: '192.168.1.1',
-				virus: ['APT1'],
+				ip: App.util.Global.ip.longToIp(
+					App.util.Global.ip.genRandomLongIp()
+				),
+				virus: Ext.Array.sort(Ext.Array.unique(vdat)),
 				owner: App.util.Global.stub.owners[Math.floor(Math.random() * App.util.Global.stub.owners.length)].fullName,
-				serverFunction: App.util.Global.stub.ipFunctions[Math.floor(Math.random() * App.util.Global.stub.ipFunctions.length)].name
+				serverFunction: App.util.Global.stub.serverFunctions[Math.floor(Math.random() * App.util.Global.stub.serverFunctions.length)].name,
+				latitude: App.util.Global.ip.genRandomLatitude(),
+				longitude: App.util.Global.ip.genRandomLongitude()
 			});
 		}
-		
+
 		me.getStore().removeAll();
-		me.getStore().loadRawData(me.normalizeThreatData(ret), false);
+		me.getStore().loadRawData(me.buildThreatData(ret), false);
 		
-		
-		
+		// add to map
+		me.eventRelay.publish('addIpDataToMap', ret);
 	},
 	
+	// @util renderer
 	countRenderer: function(value) {
 		return Ext.util.Format.number(value, '0,000');
 	}
