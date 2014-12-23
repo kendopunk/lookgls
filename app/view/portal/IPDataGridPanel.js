@@ -131,7 +131,6 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 	 * @description Start the feed for the first time
 	 */
 	initFeed: function() {
-		return;
 		var me = this;
 		
 		me.feedButton.setIconCls(me.dataFeedOnCls);
@@ -286,10 +285,15 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		}
 
 		me.getStore().removeAll();
-		me.getStore().loadRawData(me.buildThreatData(ret), false);
+		
+		var gridThreatData = me.buildThreatData(ret);
+		me.getStore().loadRawData(gridThreatData, false);
 		
 		// add to map
 		me.eventRelay.publish('addIpDataToMap', ret);
+		
+		// notify chart
+		me.eventRelay.publish('ipStoreDataChange', gridThreatData);
 	},
 	
 	// @util renderer

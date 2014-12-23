@@ -9,9 +9,9 @@ Ext.application({
 	
 	enableQuickTips: true,
 	
-	/* controllers: [
+	controllers: [
 		'Application'
-	], */
+	],
 	
 	requires: [
 		'Ext.container.Viewport',
@@ -30,28 +30,30 @@ Ext.application({
 		var me = this;
 		
 		me.mapPanel = Ext.create('App.view.portal.WorldMapPanel', {
-			region: 'west',
-			width: Math.floor(Ext.getBody().getViewSize().width * .65),
-			height: Math.floor(Ext.getBody().getViewSize().height * .95)
+			width: Math.floor(Ext.getBody().getViewSize().width * .6),
+			height: Math.floor(Ext.getBody().getViewSize().height * .8)
 		});
 			
 		me.vizPanel = Ext.create('App.view.portal.StackedBarPanel', {
-			region: 'center',
-			calculatedWidth: Math.floor(Ext.getBody().getViewSize().width * .35),
-			calculatedHeight: Math.floor(Ext.getBody().getViewSize().height * .95)
+			width: Math.floor(Ext.getBody().getViewSize().width * .4),
+			height: Math.floor(Ext.getBody().getViewSize().height * .8)
 		});
 			
 		me.gridPanel = Ext.create('App.view.portal.IPDataGridPanel', {
-			region: 'south',
-			height: Math.floor(Ext.getBody().getViewSize().height * .25)
+			colspan: 2,
+			width: Ext.getBody().getViewSize().width,
+			height: Math.floor(Ext.getBody().getViewSize().height * .2)
 		});
 		
 		Ext.create('Ext.container.Viewport', {		
-			layout: 'border',
+			layout: {
+				type: 'table',
+				columns: 2
+			},
 			items: [
 				me.mapPanel,
 				me.vizPanel,
-				//me.gridPanel
+				me.gridPanel
 			]
 		});
 		

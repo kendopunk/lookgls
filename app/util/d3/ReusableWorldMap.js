@@ -166,7 +166,7 @@ projection scale value, and everything should stay consistent.*/
 				
 			}, me);
 			
-		me.svg.call(me.zoom);
+		//me.svg.call(me.zoom);
 			
 		me.panelMask(true);
 		
@@ -194,8 +194,6 @@ projection scale value, and everything should stay consistent.*/
 	 */
 	renderMap: function() {
 		var me = this;
-		
-		console.log('in renderMap()...');
 		
 		me.gPath.append('path')
 			.datum(me.gPathraticule)
@@ -267,7 +265,7 @@ projection scale value, and everything should stay consistent.*/
 	panelReady: function() {
 		var me = this;
 		
-		var data = [{
+		/*var data = [{
 		"ip": "10.223.75.86",
 		"virus": ["APT1", "Botnet"],
 		"owner": "TMQ Financial",
@@ -286,7 +284,7 @@ projection scale value, and everything should stay consistent.*/
 				return me.projection([d.longitude, d.latitude])[1];
 			})
 			.attr('r', 5)
-			.style('fill', '#CC3300');
+			.style('fill', '#CC3300');*/
 		
 		if(me.panel) {
 			try {

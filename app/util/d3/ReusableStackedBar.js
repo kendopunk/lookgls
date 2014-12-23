@@ -4,7 +4,7 @@
  * @memberOf App.util.d3
  * @description Stacked bar chart class
  */
-Ext.define('App.util.d3.UniversalStackedBar', {
+Ext.define('App.util.d3.ReusableStackedBar', {
 	
 	/**
  	 * The primary SVG element.  Must be set (after render) outside this class
@@ -317,7 +317,7 @@ Ext.define('App.util.d3.UniversalStackedBar', {
 				}
 			});
 			
-		rectSelection.call(d3.helper.tooltip().text(me.tooltipFunction));
+		//rectSelection.call(d3.helper.tooltip().text(me.tooltipFunction));
 		
 		return;
 	},
