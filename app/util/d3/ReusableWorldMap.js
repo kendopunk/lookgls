@@ -65,7 +65,80 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 				me.eventRelay.publish('mapZoomStart');
 			})
 			.on('zoomend', function() {
-				me.eventRelay.publish('mapZoomEnd');
+
+				var lat = 39.290385, long = -76.612189;
+				//console.log(me.projection([long, lat]));
+				
+				var theScale = me.zoom.scale();
+
+
+				var temp = d3.geo.mercator().translate(me.zoom.translate()).scale(me.zoom.scale());
+				//console.log(temp([long, lat]));
+				
+				me.svg.selectAll('circle')
+					.attr('transform', function(d) {
+						var ln = temp([long, lat])[0];
+						var lt = temp([long, lat])[1];
+						
+						///console.log('translating...' + ln + ' / ' + lt);
+						///console.log(d3.event.scale);
+						return 'translate(' + ln + ',' + lt + ')';
+						
+					});
+					
+					/*
+					
+					So, simply multiplying by
+d3.event.scale fixes this issue:
+
+
+					As translate is specified in pixels, it should be consistent with the
+pixel-space translation vector of d3.behavior.zoom.  I'm not sure how
+easy it is to do zooming as well though, I'll need to get back to you on
+that!  I imagine you could do this by taking d3.event.scale and
+multiplying it by your initial projection scale value to get the new
+projection scale value, and everything should stay consistent.*/
+					
+				/*me.svg.append('circle')
+					.datum([1])
+					.attr('cx', function(d) {
+						var ln = temp([long, lat])[0];
+						console.log(ln);
+						return ln;
+					})
+					.attr('cy', function(d) {
+						var lt = temp([long, lat])[1];
+						console.log(lt);
+						return lt;
+					})
+					.attr('r', 4)
+					.style('fill', 'blue');*/
+					
+					/*me.svg.append('circle')
+				.datum(d)
+				.attr('cx', function(d) {
+					return me.worldMap.getMapCoords(d.longitude, d.latitude)[0];
+				})
+				.attr('cy', function(d) {
+					return me.worldMap.getMapCoords(d.longitude, d.latitude)[1];
+				})
+				.on('mouseover', function() {
+					me.mousingOver = true;
+				})
+				.on('mouseout', function() {
+					me.mousingOver = false;
+				})
+				.attr('r', 4)
+				.style('stroke', 'black')
+				.style('stroke-width', .75)
+				.style('fill', function(d) {
+					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
+						return sf.name == d.serverFunction;
+					})[0].color;
+				});*/
+
+				// https://groups.google.com/forum/#!msg/d3-js/pvovPbU5tmo/lmS86nF_C-EJ
+
 			})
 			.on('zoom', function() {
 				var t = d3.event.translate,
@@ -74,6 +147,8 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 					h = Math.floor(me.canvasHeight/4),
 					width = me.canvasWidth,
 					height = me.canvasHeight;
+					
+				console.log('zoom, scale: ' + d3.event.scale);
 		
 				t[0] = Math.min(
 					(width/height) * (s - 1), 
@@ -85,6 +160,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 				);
 				
 				me.zoom.translate(t);
+				
 				
 				me.gPath.attr('transform', 'translate(' + t  + ')scale(' + s + ')');
 				
@@ -190,6 +266,27 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 	 */
 	panelReady: function() {
 		var me = this;
+		
+		var data = [{
+		"ip": "10.223.75.86",
+		"virus": ["APT1", "Botnet"],
+		"owner": "TMQ Financial",
+		"serverFunction": "web server",
+		"latitude": 39.290385,
+		"longitude": -76.612189
+	}];
+		me.svg.selectAll('circle')
+			.data(data)
+			.enter()
+			.append('circle')
+			.attr('cx', function(d) {
+				return me.projection([d.longitude, d.latitude])[0];
+			})
+			.attr('cy', function(d) {
+				return me.projection([d.longitude, d.latitude])[1];
+			})
+			.attr('r', 5)
+			.style('fill', '#CC3300');
 		
 		if(me.panel) {
 			try {

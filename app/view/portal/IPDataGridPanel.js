@@ -131,6 +131,7 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 	 * @description Start the feed for the first time
 	 */
 	initFeed: function() {
+		return;
 		var me = this;
 		
 		me.feedButton.setIconCls(me.dataFeedOnCls);
