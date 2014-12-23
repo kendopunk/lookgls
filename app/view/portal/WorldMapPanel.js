@@ -91,9 +91,9 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		var me = this;
 	
 		Ext.each(dat, function(d) {
-			//me.rawData.push(d);
+			me.rawData.push(d);
 			
-			/*me.svg.append('circle')
+			me.svg.append('circle')
 				.datum(d)
 				.attr('cx', function(d) {
 					return me.worldMap.getMapCoords(d.longitude, d.latitude)[0];
@@ -114,7 +114,7 @@ Ext.define('App.view.portal.WorldMapPanel', {
 					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
 						return sf.name == d.serverFunction;
 					})[0].color;
-				});*/
+				});
 		}, me);
 		
 		// conflicts with active tooltipDiv

@@ -14,8 +14,8 @@ Ext.define('App.util.Global', {
 			
 			// -90 to 90
 			genRandomLatitude: function() {
-				// 80 instead of 90
-				var num = (Math.random()*80).toFixed(3);
+				// keep constrained
+				var num = (Math.random()*70).toFixed(3);
 				if(Math.random() > .5) {
 					return num * -1;
 				}
@@ -24,8 +24,8 @@ Ext.define('App.util.Global', {
 			
 			// -180 to 180
 			genRandomLongitude: function() {
-				// 170 instead of 180
-				var num = (Math.random()*170).toFixed(3);
+				// keep constrained
+				var num = (Math.random()*160).toFixed(3);
 				if(Math.random() > .5) {
 					return num * -1;
 				}
