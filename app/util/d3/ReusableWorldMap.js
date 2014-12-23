@@ -62,14 +62,18 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		me.zoom = d3.behavior.zoom()
 			.scaleExtent([1, 9])
 			.on('zoomstart', function() {
-				//me.eventRelay.publish('mapZoomStart');
-				console.log('ZOOM started...');
+				// console.log('map zoom start...');
 			})
 			.on('zoomend', function() {
+				// console.log('map zoom end...');
 				console.log('ZOOM END!');
 				
-				var circ = me.svg.selectAll('circle');
-				circ.attr('r', 3/1.64);
+				me.svg.selectAll('circle').attr('r', function(d) {
+					return 3 / me.zoom.scale();
+				});
+				
+				//var circ = me.svg.selectAll('circle');
+				///circ.attr('r', 3/1.64);
 				
 				//var coords = d3.mouse(this);
 				//console.debug(coords);
@@ -81,25 +85,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 				
 				// 257 and 487 on falkland islands
 				
-				
-				/*me.svg.selectAll('circle')
-					.transition()
-					.attr('cx', 110)
-					.attr('cy', 113);*/
-					
-					
-				/*me.svg.append('circle')
-					.datum([1])
-					.attr('cx', function(d) {
-						return 204 * 1/1.64;
-					})
-					.attr('cy', function(d) {
-						return 265 * 1/1.64;
-					})
-					.attr('r', )
-					.style('fill', 'black');*/
-				
-				// 1.64
+			
 
 				/*var lat = 39.290385, long = -76.612189;
 				//console.log(me.projection([long, lat]));
@@ -183,7 +169,7 @@ projection scale value, and everything should stay consistent.*/
 					width = me.canvasWidth,
 					height = me.canvasHeight;
 					
-				console.log('zoom, scale: ' + d3.event.scale);
+				//console.log('zoom, scale: ' + d3.event.scale);
 		
 				t[0] = Math.min(
 					(width/height) * (s - 1), 
@@ -202,9 +188,7 @@ projection scale value, and everything should stay consistent.*/
 				
 				
 				
-				var circles = me.svg.selectAll('circle');
-				
-				circles.attr('transform', 'translate(' + t  + ')scale(' + s + ')');
+				me.svg.selectAll('circle').attr('transform', 'translate(' + t  + ')scale(' + s + ')');
 				
 			}, me);
 			

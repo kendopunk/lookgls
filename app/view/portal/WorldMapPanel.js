@@ -26,8 +26,6 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		// subscribe to IP data generation
 		//////////////////////////////////////////////////
 		me.eventRelay.subscribe('addIpDataToMap', me.renderIpData, me);
-		me.eventRelay.subscribe('mapZoomStart', me.onZoomStart, me);
-		me.eventRelay.subscribe('mapZoomEnd', me.onZoomEnd, me);
 		
 		//////////////////////////////////////////////////
 		// toolbar components
@@ -108,8 +106,8 @@ Ext.define('App.view.portal.WorldMapPanel', {
 					me.mousingOver = false;
 				})
 				.attr('r', 4)
-				.style('stroke', 'black')
-				.style('stroke-width', .75)
+				//.style('stroke', 'black')
+				//.style('stroke-width', .75)
 				.style('fill', function(d) {
 					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
 						return sf.name == d.serverFunction;
@@ -129,38 +127,5 @@ Ext.define('App.view.portal.WorldMapPanel', {
 					+ ']';
 			}));
 		}
-	},
-	
-	onZoomStart: function() {
-		var me = this;
-		
-		//me.svg.selectAll('circle').remove();
-	
-	},
-	
-	onZoomEnd: function() {
-		var me = this;
-		
-		//var temp = d3.select(me.svg).getBBox();
-	//	console.debug(temp);
-		
-		// http://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform
-		/*console.debug(me.rawData);
-
-		var long = -76.612189, lat = 39.290385;
-		
-		me.svg.append('circle')
-				.datum([1])
-				.attr('cx', function(d) {
-					return me.worldMap.getMapCoords(long, lat)[0];
-				})
-				.attr('cy', function(d) {
-					return me.worldMap.getMapCoords(long, lat)[1];
-				})
-				.attr('r', 4)
-				.style('stroke', 'black')
-				.style('stroke-width', .75)
-				.style('fill', '#000000');*/
-	
 	}
 });
