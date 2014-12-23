@@ -52,7 +52,8 @@ Ext.application({
 			},
 			items: [
 				me.mapPanel,
-				me.vizPanel,
+				//me.vizPanel,
+				{xtype: 'panel', title: 'Foo'},
 				me.gridPanel
 			]
 		});

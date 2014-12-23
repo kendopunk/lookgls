@@ -62,11 +62,46 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		me.zoom = d3.behavior.zoom()
 			.scaleExtent([1, 9])
 			.on('zoomstart', function() {
-				me.eventRelay.publish('mapZoomStart');
+				//me.eventRelay.publish('mapZoomStart');
+				console.log('ZOOM started...');
 			})
 			.on('zoomend', function() {
+				console.log('ZOOM END!');
+				
+				var circ = me.svg.selectAll('circle');
+				circ.attr('r', 3/1.64);
+				
+				//var coords = d3.mouse(this);
+				//console.debug(coords);
+				
 
-				var lat = 39.290385, long = -76.612189;
+				
+				// 204 and 265 for dayton
+				// 162 and 132...new Dayton @ 1.64
+				
+				// 257 and 487 on falkland islands
+				
+				
+				/*me.svg.selectAll('circle')
+					.transition()
+					.attr('cx', 110)
+					.attr('cy', 113);*/
+					
+					
+				/*me.svg.append('circle')
+					.datum([1])
+					.attr('cx', function(d) {
+						return 204 * 1/1.64;
+					})
+					.attr('cy', function(d) {
+						return 265 * 1/1.64;
+					})
+					.attr('r', )
+					.style('fill', 'black');*/
+				
+				// 1.64
+
+				/*var lat = 39.290385, long = -76.612189;
 				//console.log(me.projection([long, lat]));
 				
 				var theScale = me.zoom.scale();
@@ -84,7 +119,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 						///console.log(d3.event.scale);
 						return 'translate(' + ln + ',' + lt + ')';
 						
-					});
+					});*/
 					
 					/*
 					
@@ -164,9 +199,16 @@ projection scale value, and everything should stay consistent.*/
 				
 				me.gPath.attr('transform', 'translate(' + t  + ')scale(' + s + ')');
 				
+				
+				
+				
+				var circles = me.svg.selectAll('circle');
+				
+				circles.attr('transform', 'translate(' + t  + ')scale(' + s + ')');
+				
 			}, me);
 			
-		//me.svg.call(me.zoom);
+		me.svg.call(me.zoom);
 			
 		me.panelMask(true);
 		
@@ -296,7 +338,14 @@ projection scale value, and everything should stay consistent.*/
 	},
 	
 	getMapCoords: function(long, lat) {
-		return this.projection([long, lat]);
+		var temp = this.projection([long, lat]);
+		
+		console.debug(temp);
+		return temp;
+		
+		// 204 and 265 for dayton
+		// 110 and 113 
+
 	},
 	
 	/**
