@@ -30,11 +30,20 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		//////////////////////////////////////////////////
 		// toolbar components
 		//////////////////////////////////////////////////
+		var serverButtons = Ext.Array.map(App.util.Global.stub.serverFunctions, function(sf) {
+				return {
+					xtype: 'button',
+					text: sf.shortName,
+					iconCls: sf.cls
+				}
+			});
+		console.debug(serverButtons);
+		
 		me.dockedItems = [{
 			xtype: 'toolbar',
 			dock: 'top',
 			items: [
-				{xtype: 'tbtext', text: '<b>Map</b>'}
+				serverButtons
 			]
 		}];
 		

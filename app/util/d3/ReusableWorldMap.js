@@ -69,7 +69,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 				console.log('ZOOM END!');
 				
 				me.svg.selectAll('circle').attr('r', function(d) {
-					return 3 / me.zoom.scale();
+					return 4/me.zoom.scale();
 				});
 				
 				//var circ = me.svg.selectAll('circle');

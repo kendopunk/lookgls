@@ -55,15 +55,18 @@ Ext.define('App.util.Global', {
 			serverFunctions: [{
 				name: 'mail server',
 				shortName: 'Mail',
-				color: '#FFCC33'
+				color: '#FFCC33',
+				cls: 'icon-server-mail'
 			}, {
 				name: 'web server',
 				shortName: 'Web',
-				color: '#6495ED'
+				color: '#6495ED',
+				cls: 'icon-server-web'
 			}, {
 				name: 'ftp server',
 				shortName: 'FTP',
-				color: '#C71585'
+				color: '#C71585',
+				cls: 'icon-server-ftp'
 			}],
 			
 			viruses: [{

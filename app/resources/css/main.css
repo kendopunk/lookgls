@@ -79,6 +79,21 @@
 	background-repeat: no-repeat;
 }
 
+.icon-server-ftp {
+	background-image: url(../img/icons/16x16/ftpserver.png) !important;
+	background-repeat: no-repeat;
+}
+
+.icon-server-mail {
+	background-image: url(../img/icons/16x16/mailserver.png) !important;
+	background-repeat: no-repeat;
+}
+
+.icon-server-web {
+	background-image: url(../img/icons/16x16/webserver.png) !important;
+	background-repeat: no-repeat;
+}
+
 .icon-stacked-bar-chart {
 	background-image: url(../img/icons/16x16/stacked-bar-chart.png) !important;
 	background-repeat: no-repeat;
