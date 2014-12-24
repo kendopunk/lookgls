@@ -56,6 +56,7 @@ Ext.define('App.view.portal.StackedBarPanel', {
 		// subscriptions
 		////////////////////////////////////////
 		me.eventRelay.subscribe('ipStoreDataChange', me.ipStoreDataChange, me);
+		me.eventRelay.subscribe('clearAllData', me.clearAllData, me);
 		
 		////////////////////////////////////////
 		// tick functions
@@ -318,9 +319,7 @@ Ext.define('App.view.portal.StackedBarPanel', {
 					values: []
 				};
 			
-				Ext.each(Ext.Array.sort(dat, function(o1, o2) {
-					return o1 > o2 ? 1 : -1;
-				}), function(d) {
+				Ext.each(dat, function(d) {
 					obj.values.push({
 						id: d.owner,
 						category: sm.label,
@@ -341,9 +340,7 @@ Ext.define('App.view.portal.StackedBarPanel', {
 					values: []
 				};
 			
-				Ext.each(Ext.Array.sort(dat, function(o1, o2) {
-					return o1 > o2 ? 1 : -1;
-				}), function(d) {
+				Ext.each(dat, function(d) {
 					obj.values.push({
 						id: d.owner,
 						category: vm.label,
@@ -437,5 +434,25 @@ Ext.define('App.view.portal.StackedBarPanel', {
 			);
 			me.stackedBarChart.draw();
 		}
-	}	
+	},
+	
+	/**
+	 * @function
+	 * @description Clear all data from the stacked bar chart...actually
+	 * we're resetting all the y / y0 properties to zero
+	 */
+	clearAllData: function() {
+		var me = this;
+		
+		var gd = Ext.clone(me.stackedBarChart.graphData);
+		Ext.each(gd, function(d) {
+			Ext.each(d.values, function(dv) {
+				dv.y = 0;
+				dv.y0 = 0;
+			});
+		});
+		
+		me.stackedBarChart.setGraphData(gd);
+		me.stackedBarChart.draw();
+	}
 });

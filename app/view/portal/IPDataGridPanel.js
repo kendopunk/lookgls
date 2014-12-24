@@ -112,6 +112,23 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 			disabled: true
 		});
 		
+		me.clearButton = Ext.create('Ext.button.Button', {
+			disabled: true,
+			text: 'Clear Data / Reset',
+			iconCls: 'icon-refresh',
+			handler: function() {
+				Ext.MessageBox.confirm('Clear all data?', 
+					'This action cannot be undone.',
+					function(btn, text) {
+						if(btn == 'yes') {
+							me.clearAllData();
+						}
+					}, 
+				me);
+			},
+			scope: me
+		});
+		
 		me.dockedItems = [{
 			xtype: 'toolbar',
 			dock: 'top',
@@ -119,7 +136,10 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 				{xtype: 'tbspacer', width: 10},
 				me.feedButton,
 				{xtype: 'tbspacer', width: 5},
-				me.feedStatus
+				me.feedStatus,
+				'->',
+				me.clearButton,
+				{xtype: 'tbspacer', width: 20}
 			]
 		}];
 		
@@ -153,6 +173,7 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 					
 					me.feedButton.setDisabled(false);
 					me.feedStatus.setDisabled(false);
+					me.clearButton.setDisabled(false);
 					me.dataFeedRunning = true;
 				}, 5000, me);
 			},
@@ -196,7 +217,9 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 			});
 		}, me);
 		
-		return me.baseData;
+		return Ext.Array.sort(me.baseData, function(o1, o2) {
+			return o1.owner > o2.owner ? 1 : -1;
+		});
 	},
 	
 	/**
@@ -296,6 +319,63 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 		me.eventRelay.publish('ipStoreDataChange', gridThreatData);
 	},
 	
+	/**
+ 	 * @function
+ 	 * @description Clear all the data and start fresh
+ 	 */
+ 	clearAllData: function() {
+	 	var me = this;
+	 	
+	 	// step 1....stop the data feed
+		if(me.dataFeedRunning) {
+			me.feedButton.setDisabled(true);
+			me.feedButton.setIconCls(me.dataFeedOffCls);
+			me.feedStatus.setText('STOPPED');
+			Ext.TaskManager.stop(me.dataFeedTask);
+			me.dataFeedRunning = false;
+		}
+		
+		// step 2...clear the store and reload with -0- values
+		var existingStoreData = Ext.Array.map(me.getStore().getRange(), function(rng) {
+			return rng.data;
+		}, me);
+		Ext.each(existingStoreData, function(esd) {
+			esd.botCount = 0;
+			esd.spamCount = 0;
+			esd.trojanCount = 0;
+			esd.mailServerCount = 0;
+			esd.ftpServerCount = 0;
+			esd.webServerCount = 0;
+		});
+		me.getStore().loadRawData(existingStoreData, false);
+		
+		// step 3...reset baseData
+		me.baseData = Ext.Array.map(App.util.Global.stub.owners, function(o) {
+			return {
+				owner: o.fullName,
+				botCount: 0,
+				spamCount: 0,
+				trojanCount: 0,
+				mailServerCount: 0,
+				ftpServerCount: 0,
+				webServerCount: 0
+			};
+		});
+
+		// step 4...event relay to map and chart
+		me.eventRelay.publish('clearAllData', true);
+		
+		// step 5...start the feed again
+		setTimeout(function() {
+			me.feedButton.setDisabled(false);
+			me.feedButton.setIconCls(me.dataFeedOnCls);
+			me.feedStatus.setText('RUNNING');
+			Ext.TaskManager.start(me.dataFeedTask);
+			me.dataFeedRunning = true;
+		}, 1500, me);
+ 	
+ 	},
+ 	
 	// @util renderer
 	countRenderer: function(value) {
 		return Ext.util.Format.number(value, '0,000');

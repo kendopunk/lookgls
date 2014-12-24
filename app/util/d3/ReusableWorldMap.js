@@ -186,7 +186,8 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 	 * @description Render static, unchanging legend bottom left
  	 */
 	renderLegend: function() {
-		var me = this;
+		var me = this,
+			defaultYPos = 25;
 		
 		////////////////////////////////////////
 	 	// LEGEND RECTANGLES
@@ -198,9 +199,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		 	.attr('x', function(d, i) {
 		 		return 25 + (i*60);
 			 })
-			.attr('y', function() {
-				return me.canvasHeight - 50;
-			})
+			.attr('y', defaultYPos)
 			.attr('width', 7)
 			.attr('height', 7)
 			.style('fill', function(d) {
@@ -217,9 +216,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		 	.attr('x', function(d, i) {
 		 		return 25 + (i*60) + 12;
 			 })
-			.attr('y', function() {
-				return me.canvasHeight - 42;
-			})
+			.attr('y', defaultYPos + 8)
 			.attr('class', 'tinyText')
 			.text(function(d) {
 				return d.shortName;
@@ -258,7 +255,14 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 	},
 	
 	getMapCoords: function(long, lat) {
+	
+		//var temp = this.projection.invert([204,165]);
+		//console.debug(temp);
+		
+		//console.log(this.projection([long, lat]));
 		return this.projection([long, lat]);
+		
+		// projection.invert(d3.mouse(this))
 	},
 	
 	/**

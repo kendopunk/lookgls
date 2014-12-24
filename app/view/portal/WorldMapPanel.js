@@ -29,6 +29,7 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		// subscribe to IP data generation
 		//////////////////////////////////////////////////
 		me.eventRelay.subscribe('addIpDataToMap', me.renderIpData, me);
+		me.eventRelay.subscribe('clearAllData', me.clearAllData, me);
 		
 		//////////////////////////////////////////////////
 		// toolbar components
@@ -179,5 +180,15 @@ Ext.define('App.view.portal.WorldMapPanel', {
 				return e.serverFunction == btn.serverFunction;
 			})
 			.style('visibility', visibility);
+	},
+	
+	/**
+	 * @function
+	 * @description Clear all circles from the chart
+	 */
+	clearAllData: function() {
+		var me = this;
+		
+		me.svg.selectAll('circle').remove();
 	}
 });
