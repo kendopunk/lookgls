@@ -103,10 +103,10 @@ Ext.define('App.view.portal.StackedBarPanel', {
 		me.viewCombo = Ext.create('Ext.form.field.ComboBox', {
 			disabled: true,
 			store: Ext.create('Ext.data.Store', {
-				fields: ['display', 'value'],
+				fields: ['display', 'value', 'palette'],
 				data: [
-					{display: 'Owner->Virus', value: 'ov'},
-					{display: 'Owner->Server', value: 'os'}
+					{display: 'Owner->Virus', value: 'ov', palette: 'custom'},
+					{display: 'Owner->Server', value: 'os', palette: 'server'}
 				]
 			}),
 			displayField: 'display',
@@ -118,14 +118,17 @@ Ext.define('App.view.portal.StackedBarPanel', {
 			listWidth: 125,
 			value: me.currentView,
 			listeners: {
-				select: function(combo) {
+				select: function(combo, records) {
 					var gr = me.up().down('grid');
+					
+					me.stackedBarChart.setColorPalette(records[0].data.palette);
 					
 					if(gr !== undefined) {
 						var storeData = Ext.clone(gr.getStore().getRange());
 						
 						if(storeData.length > 0) {
 							me.currentView = combo.getValue();
+							
 							me.stackedBarChart.setGraphData(
 								me.normalizeData(
 									Ext.Array.map(storeData, function(rng) {
@@ -184,7 +187,7 @@ Ext.define('App.view.portal.StackedBarPanel', {
  	initCanvas: function() {
  		var me = this;
  		
- 		me.getEl().mask('Calculating...');
+ 		me.getEl().mask('Loading...');
  		
 	 	// initialize SVG, width, height
  		me.canvasWidth = parseInt(me.body.dom.offsetWidth * .98),
@@ -220,6 +223,57 @@ Ext.define('App.view.portal.StackedBarPanel', {
 			tooltipFunction: me.tooltipFunctions[me.currentScale],
 			yTickFormat: me.tickFunctions[me.currentScale]
 		});
+		
+		// need access to functions in the grid panel
+		var gr = me.up().down('grid');
+		
+		Ext.Ajax.request({
+			url: 'data/data.json',
+			method: 'GET',
+			success: function(response) {
+			
+				var resp = Ext.decode(response.responseText), baseData = [];
+				
+				// base data
+				Ext.each(Ext.Array.sort(Ext.Array.unique(Ext.Array.map(resp.threatData, function(d) {
+					return d.owner;
+				}))), function(item) {
+					baseData.push({
+						owner: item,
+						botCount: 0,
+						spamCount: 0,
+						trojanCount: 0,
+						mailServerCount: 0,
+						ftpServerCount: 0,
+						webServerCount: 0
+					});
+				});
+				
+				// sum up values
+				Ext.each(baseData, function(bd) {
+					Ext.each(resp.threatData, function(td) {
+						bd.botCount += gr.countVirus(td, 'Bot', bd.owner);
+						bd.spamCount += gr.countVirus(td, 'Spam', bd.owner);
+						bd.trojanCount += gr.countVirus(td, 'Trojan', bd.owner);
+						bd.mailServerCount += gr.countServer(td, 'mail server', bd.owner);
+						bd.webServerCount += gr.countServer(td, 'web server', bd.owner);
+						bd.ftpServerCount += gr.countServer(td, 'ftp server', bd.owner);
+					});
+				});
+				
+				me.stackedBarChart.setGraphData(me.normalizeData(baseData));
+				if(me.stackedBarChart.chartInitialized) {
+					me.stackedBarChart.draw();
+				} else {
+					me.stackedBarChart.initChart().draw();
+				}
+			},
+			callback: function() {
+				me.viewCombo.setDisabled(false);
+				me.getEl().unmask();
+			},
+			scope: me
+		});
  	},
 	
 	/**
@@ -236,11 +290,7 @@ Ext.define('App.view.portal.StackedBarPanel', {
 		// take raw IP store data and change
 		// to chart-consumable format
 		var formattedData = me.normalizeData(dat);
-		
-		var temp = me.svg.selectAll('div.tooltip');
-		console.debug
-	
-		
+
 		me.stackedBarChart.setGraphData(formattedData);
 		if(me.stackedBarChart.chartInitialized) {
 			me.stackedBarChart.draw();
@@ -249,7 +299,6 @@ Ext.define('App.view.portal.StackedBarPanel', {
 		}
 		
 		me.viewCombo.setDisabled(false);
-		me.getEl().unmask();
 	},
 	
 	/**
@@ -269,7 +318,9 @@ Ext.define('App.view.portal.StackedBarPanel', {
 					values: []
 				};
 			
-				Ext.each(dat, function(d) {
+				Ext.each(Ext.Array.sort(dat, function(o1, o2) {
+					return o1 > o2 ? 1 : -1;
+				}), function(d) {
 					obj.values.push({
 						id: d.owner,
 						category: sm.label,
@@ -290,7 +341,9 @@ Ext.define('App.view.portal.StackedBarPanel', {
 					values: []
 				};
 			
-				Ext.each(dat, function(d) {
+				Ext.each(Ext.Array.sort(dat, function(o1, o2) {
+					return o1 > o2 ? 1 : -1;
+				}), function(d) {
 					obj.values.push({
 						id: d.owner,
 						category: vm.label,
@@ -301,6 +354,10 @@ Ext.define('App.view.portal.StackedBarPanel', {
 				ret.push(obj);
 			}, me);
 		}
+		
+		////////////////////////////////////////
+		// sort by owner before final adjustments
+		////////////////////////////////////////
 		
 		if(me.currentScale == 'pct') {
 			return me.normalizePercent(ret);

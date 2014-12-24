@@ -14,7 +14,7 @@ Ext.define('App.util.Global', {
 			
 			// -90 to 90
 			genRandomLatitude: function() {
-				// keep constrained
+				// keep constrained -70 to 70
 				var num = (Math.random()*70).toFixed(3);
 				if(Math.random() > .5) {
 					return num * -1;
@@ -24,7 +24,7 @@ Ext.define('App.util.Global', {
 			
 			// -180 to 180
 			genRandomLongitude: function() {
-				// keep constrained
+				// keep constrained -160 to 160
 				var num = (Math.random()*160).toFixed(3);
 				if(Math.random() > .5) {
 					return num * -1;
@@ -45,14 +45,19 @@ Ext.define('App.util.Global', {
 		
 		stub: {
 			owners: [{
-				fullName: 'TMQ Financial',
-				shortName: 'TMQ'
-			}, {
 				fullName: 'Anderson Services',
 				shortName: 'Anderson'
+			}, {
+				fullName: 'TMQ Financial',
+				shortName: 'TMQ'
 			}],
 			
 			serverFunctions: [{
+				name: 'ftp server',
+				shortName: 'FTP',
+				color: '#C71585',
+				cls: 'icon-server-ftp'
+			}, {
 				name: 'mail server',
 				shortName: 'Mail',
 				color: '#FFCC33',
@@ -62,11 +67,6 @@ Ext.define('App.util.Global', {
 				shortName: 'Web',
 				color: '#6495ED',
 				cls: 'icon-server-web'
-			}, {
-				name: 'ftp server',
-				shortName: 'FTP',
-				color: '#C71585',
-				cls: 'icon-server-ftp'
 			}],
 			
 			viruses: [{

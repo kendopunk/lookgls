@@ -19,7 +19,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 	circleData: [],
 	countryDefaults: {
 		fill: '#BBB',
-		fillOver: '#999',
+		fillOver: '#DEB887',	// 999
 		stroke: 'none',
 		strokeWidth: 1,
 		strokeOver: 'white'
@@ -27,6 +27,7 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 	eventRelay: null,
 	gPath: null,
 	graticule: d3.geo.graticule(),
+	mapCircleRadius: 4,
 	panel: null,
 	path: null,
 	projection: null,
@@ -59,6 +60,8 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		
 		me.gPath = me.svg.append('svg:g');
 		
+		me.gLegend = me.svg.append('svg:g');
+		
 		me.zoom = d3.behavior.zoom()
 			.scaleExtent([1, 9])
 			.on('zoomstart', function() {
@@ -66,100 +69,15 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 			})
 			.on('zoomend', function() {
 				// console.log('map zoom end...');
-				console.log('ZOOM END!');
 				
-				me.svg.selectAll('circle').attr('r', function(d) {
-					return 4/me.zoom.scale();
-				});
-				
-				//var circ = me.svg.selectAll('circle');
-				///circ.attr('r', 3/1.64);
-				
-				//var coords = d3.mouse(this);
-				//console.debug(coords);
-				
-
-				
-				// 204 and 265 for dayton
-				// 162 and 132...new Dayton @ 1.64
-				
-				// 257 and 487 on falkland islands
-				
-			
-
-				/*var lat = 39.290385, long = -76.612189;
-				//console.log(me.projection([long, lat]));
-				
-				var theScale = me.zoom.scale();
-
-
-				var temp = d3.geo.mercator().translate(me.zoom.translate()).scale(me.zoom.scale());
-				//console.log(temp([long, lat]));
-				
+				// adjust circle radius after zooming is finished
 				me.svg.selectAll('circle')
-					.attr('transform', function(d) {
-						var ln = temp([long, lat])[0];
-						var lt = temp([long, lat])[1];
-						
-						///console.log('translating...' + ln + ' / ' + lt);
-						///console.log(d3.event.scale);
-						return 'translate(' + ln + ',' + lt + ')';
-						
-					});*/
-					
-					/*
-					
-					So, simply multiplying by
-d3.event.scale fixes this issue:
-
-
-					As translate is specified in pixels, it should be consistent with the
-pixel-space translation vector of d3.behavior.zoom.  I'm not sure how
-easy it is to do zooming as well though, I'll need to get back to you on
-that!  I imagine you could do this by taking d3.event.scale and
-multiplying it by your initial projection scale value to get the new
-projection scale value, and everything should stay consistent.*/
-					
-				/*me.svg.append('circle')
-					.datum([1])
-					.attr('cx', function(d) {
-						var ln = temp([long, lat])[0];
-						console.log(ln);
-						return ln;
+					.attr('r', function() {
+						return me.mapCircleRadius / me.zoom.scale();
 					})
-					.attr('cy', function(d) {
-						var lt = temp([long, lat])[1];
-						console.log(lt);
-						return lt;
-					})
-					.attr('r', 4)
-					.style('fill', 'blue');*/
-					
-					/*me.svg.append('circle')
-				.datum(d)
-				.attr('cx', function(d) {
-					return me.worldMap.getMapCoords(d.longitude, d.latitude)[0];
-				})
-				.attr('cy', function(d) {
-					return me.worldMap.getMapCoords(d.longitude, d.latitude)[1];
-				})
-				.on('mouseover', function() {
-					me.mousingOver = true;
-				})
-				.on('mouseout', function() {
-					me.mousingOver = false;
-				})
-				.attr('r', 4)
-				.style('stroke', 'black')
-				.style('stroke-width', .75)
-				.style('fill', function(d) {
-					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
-						return sf.name == d.serverFunction;
-					})[0].color;
-				});*/
-
-				// https://groups.google.com/forum/#!msg/d3-js/pvovPbU5tmo/lmS86nF_C-EJ
-
+					.style('stroke', function() {
+						return me.zoom.scale() > 1 ? 'none' : '#555555';
+					});
 			})
 			.on('zoom', function() {
 				var t = d3.event.translate,
@@ -168,9 +86,8 @@ projection scale value, and everything should stay consistent.*/
 					h = Math.floor(me.canvasHeight/4),
 					width = me.canvasWidth,
 					height = me.canvasHeight;
-					
-				//console.log('zoom, scale: ' + d3.event.scale);
 		
+				// calculate translate directives
 				t[0] = Math.min(
 					(width/height) * (s - 1), 
 					Math.max(width * (1-s), t[0])
@@ -180,16 +97,10 @@ projection scale value, and everything should stay consistent.*/
 					Math.max(height  * (1-s) - h * s, t[1])
 				);
 				
+				// zoom, scale map, scale circles
 				me.zoom.translate(t);
-				
-				
 				me.gPath.attr('transform', 'translate(' + t  + ')scale(' + s + ')');
-				
-				
-				
-				
 				me.svg.selectAll('circle').attr('transform', 'translate(' + t  + ')scale(' + s + ')');
-				
 			}, me);
 			
 		me.svg.call(me.zoom);
@@ -207,6 +118,7 @@ projection scale value, and everything should stay consistent.*/
 			},
 			callback: function() {
 				me.renderMap();
+				me.renderLegend();
 				me.panelMask(false);
 			},
 			scope: me
@@ -220,9 +132,9 @@ projection scale value, and everything should stay consistent.*/
 	 */
 	renderMap: function() {
 		var me = this;
-		
+			
 		me.gPath.append('path')
-			.datum(me.gPathraticule)
+			.datum(me.graticule)
 			.attr('class', 'graticule')
 			.attr('d', me.path);
 			
@@ -271,6 +183,51 @@ projection scale value, and everything should stay consistent.*/
 	
 	/**
 	 * @function
+	 * @description Render static, unchanging legend bottom left
+ 	 */
+	renderLegend: function() {
+		var me = this;
+		
+		////////////////////////////////////////
+	 	// LEGEND RECTANGLES
+	 	////////////////////////////////////////
+	 	me.gLegend.selectAll('rect')
+		 	.data(App.util.Global.stub.serverFunctions)
+		 	.enter()
+		 	.append('rect')
+		 	.attr('x', function(d, i) {
+		 		return 25 + (i*60);
+			 })
+			.attr('y', function() {
+				return me.canvasHeight - 50;
+			})
+			.attr('width', 7)
+			.attr('height', 7)
+			.style('fill', function(d) {
+				return d.color;
+			});
+			
+		////////////////////////////////////////
+	 	// LEGEND TEXT
+	 	////////////////////////////////////////
+	 	me.gLegend.selectAll('text')
+		 	.data(App.util.Global.stub.serverFunctions)
+		 	.enter()
+		 	.append('text')
+		 	.attr('x', function(d, i) {
+		 		return 25 + (i*60) + 12;
+			 })
+			.attr('y', function() {
+				return me.canvasHeight - 42;
+			})
+			.attr('class', 'tinyText')
+			.text(function(d) {
+				return d.shortName;
+			});
+	},
+	
+	/**
+	 * @function
 	 * @memberOf App.util.d3.ReusableWorldMap
 	 * @description Control the parent container mask/unmask
 	 */
@@ -291,27 +248,6 @@ projection scale value, and everything should stay consistent.*/
 	panelReady: function() {
 		var me = this;
 		
-		/*var data = [{
-		"ip": "10.223.75.86",
-		"virus": ["APT1", "Botnet"],
-		"owner": "TMQ Financial",
-		"serverFunction": "web server",
-		"latitude": 39.290385,
-		"longitude": -76.612189
-	}];
-		me.svg.selectAll('circle')
-			.data(data)
-			.enter()
-			.append('circle')
-			.attr('cx', function(d) {
-				return me.projection([d.longitude, d.latitude])[0];
-			})
-			.attr('cy', function(d) {
-				return me.projection([d.longitude, d.latitude])[1];
-			})
-			.attr('r', 5)
-			.style('fill', '#CC3300');*/
-		
 		if(me.panel) {
 			try {
 				me.panel.panelReady();
@@ -322,14 +258,7 @@ projection scale value, and everything should stay consistent.*/
 	},
 	
 	getMapCoords: function(long, lat) {
-		var temp = this.projection([long, lat]);
-		
-		console.debug(temp);
-		return temp;
-		
-		// 204 and 265 for dayton
-		// 110 and 113 
-
+		return this.projection([long, lat]);
 	},
 	
 	/**

@@ -148,13 +148,13 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 				me.eventRelay.publish('addIpDataToMap', resp.threatData);
 			},
 			callback: function() {
-				/*setTimeout(function() {
+				setTimeout(function() {
 					Ext.TaskManager.start(me.dataFeedTask);
 					
 					me.feedButton.setDisabled(false);
 					me.feedStatus.setDisabled(false);
 					me.dataFeedRunning = true;
-				}, 5000, me);*/
+				}, 5000, me);
 			},
 			scope: me
 		});

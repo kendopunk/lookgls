@@ -20,7 +20,10 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		me.eventRelay = Ext.create('App.util.MessageBus'),
 			me.mousingOver = false,
 			me.rawData = [],
-			me.svg = null;
+			me.svg = null,
+			me.serverVisibility = Ext.Array.map(App.util.Global.stub.serverFunctions, function(sf) {
+				return sf.name;
+			});
 			
 		//////////////////////////////////////////////////
 		// subscribe to IP data generation
@@ -30,23 +33,31 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		//////////////////////////////////////////////////
 		// toolbar components
 		//////////////////////////////////////////////////
-		var serverButtons = Ext.Array.map(App.util.Global.stub.serverFunctions, function(sf) {
-				return {
-					xtype: 'button',
-					text: sf.shortName,
-					iconCls: sf.cls
-				}
+		var serverButtons = [];
+		Ext.each(App.util.Global.stub.serverFunctions, function(sf) {
+			serverButtons.push({
+				xtype: 'button',
+				iconCls: 'icon-tick',
+				text: sf.shortName,
+				serverFunction: sf.name,
+				status: 'on',
+				handler: me.serverButtonHandler,
+				scope: me
+			}, {
+				xtype: 'tbspacer',
+				width: 10
 			});
-		console.debug(serverButtons);
+		}, me);
 		
 		me.dockedItems = [{
 			xtype: 'toolbar',
 			dock: 'top',
 			items: [
+				{xtype: 'tbspacer', width: 10},
 				serverButtons
 			]
 		}];
-		
+
 		me.on('afterrender', me.initCanvas, me);
 		
 		me.callParent(arguments);
@@ -73,6 +84,7 @@ Ext.define('App.view.portal.WorldMapPanel', {
 			canvasWidth: me.canvasWidth,
 			canvasHeight: me.canvasHeight,
 			eventRelay: me.eventRelay,
+			mapCircleRadius: me.mapCircleRadius,
 			tooltipFunction: function(d, i) {
 				return d.properties.name;
 			}
@@ -114,9 +126,12 @@ Ext.define('App.view.portal.WorldMapPanel', {
 				.on('mouseout', function() {
 					me.mousingOver = false;
 				})
-				.attr('r', 4)
-				//.style('stroke', 'black')
-				//.style('stroke-width', .75)
+				.attr('r', me.mapCircleRadius)
+				.style('stroke', '#555555')
+				.style('stroke-width', .75)
+				.style('visibility', function(d, i) {
+					return me.serverVisibility.indexOf(d.serverFunction) >= 0 ? 'visible' : 'hidden';
+				})
 				.style('fill', function(d) {
 					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
 						return sf.name == d.serverFunction;
@@ -136,5 +151,33 @@ Ext.define('App.view.portal.WorldMapPanel', {
 					+ ']';
 			}));
 		}
+	},
+	
+	/**
+ 	 * @function
+ 	 * @description Handle clicks on the server buttons in the toolbar
+ 	 * to show / hide the circles corresponding to the type
+ 	 */
+	serverButtonHandler: function(btn, evt) {
+		var me = this, visibility;
+		
+		if(btn.status == 'on') {
+			btn.setIconCls('icon-delete');
+			btn.status = 'off';
+			visibility = 'hidden';
+			me.serverVisibility = Ext.Array.remove(me.serverVisibility, btn.serverFunction);
+		} else {
+			btn.setIconCls('icon-tick');
+			btn.status = 'on';
+			visibility = 'visible';
+			me.serverVisibility.push(btn.serverFunction);
+		}
+		
+		// show / hide
+		me.svg.selectAll('circle')
+			.filter(function(e, j) {
+				return e.serverFunction == btn.serverFunction;
+			})
+			.style('visibility', visibility);
 	}
 });

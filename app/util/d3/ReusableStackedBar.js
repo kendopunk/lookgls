@@ -239,6 +239,11 @@ Ext.define('App.util.d3.ReusableStackedBar', {
 			
 		me.gLayer.transition()
 			.style('fill', function(d, i) {
+				if(me.colorPalette == 'server') {
+					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
+						return d.category == sf.shortName.toUpperCase();
+					})[0].color;
+				}
 				return colorScale(i);
 			});
 			
@@ -491,6 +496,11 @@ Ext.define('App.util.d3.ReusableStackedBar', {
 			.attr('width', me.legendSquareWidth)
 			.attr('height', me.legendSquareHeight)
 			.attr('fill', function(d, i) {
+				if(me.colorPalette == 'server') {
+					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
+						return d.category == sf.shortName.toUpperCase();
+					})[0].color;
+				}
 				return colorScale(i);
 			});
 			
@@ -793,7 +803,10 @@ Ext.define('App.util.d3.ReusableStackedBar', {
 	setColorScale: function() {
 		var me = this;
 		
-		if(me.colorPalette == 'custom') {
+		if(me.colorPalette == 'server') {
+			return me.colorScale;
+		}
+		else if(me.colorPalette == 'custom') {
 			return me.colorScale;
 		}
 		else if(me.colorPalette == 'gradient_blue') {

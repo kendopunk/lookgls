@@ -27,11 +27,13 @@ Ext.application({
 		Ext.tip.QuickTipManager.init();
 		
 		/** scope **/
-		var me = this;
+		var me = this,
+			mapCircleRadius = 4;
 		
 		me.mapPanel = Ext.create('App.view.portal.WorldMapPanel', {
 			width: Math.floor(Ext.getBody().getViewSize().width * .6),
-			height: Math.floor(Ext.getBody().getViewSize().height * .8)
+			height: Math.floor(Ext.getBody().getViewSize().height * .8),
+			mapCircleRadius: mapCircleRadius
 		});
 			
 		me.vizPanel = Ext.create('App.view.portal.StackedBarPanel', {
@@ -52,8 +54,7 @@ Ext.application({
 			},
 			items: [
 				me.mapPanel,
-				//me.vizPanel,
-				{xtype: 'panel', title: 'Foo'},
+				me.vizPanel,
 				me.gridPanel
 			]
 		});

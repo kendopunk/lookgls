@@ -165,6 +165,18 @@ svg {
 	fill: #333333;
 }
 
+.equator {
+	stroke: #00F;
+	stroke-width: .75;
+}
+	
+.graticule {
+	fill: none;
+	stroke: #CCC;
+	stroke-width: .25,
+	stroke-opacity: .5
+}
+
 .tinyText {
 	font: 9px/1.1 sans-serif;
 }
