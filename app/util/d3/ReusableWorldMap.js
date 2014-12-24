@@ -254,15 +254,13 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		}
 	},
 	
+	/**
+ 	 * @function
+ 	 * @description Given a longitude and latitude, return
+ 	 * x/y coords based on projection
+ 	 */
 	getMapCoords: function(long, lat) {
-	
-		//var temp = this.projection.invert([204,165]);
-		//console.debug(temp);
-		
-		//console.log(this.projection([long, lat]));
 		return this.projection([long, lat]);
-		
-		// projection.invert(d3.mouse(this))
 	},
 	
 	/**

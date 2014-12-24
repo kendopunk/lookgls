@@ -423,7 +423,9 @@ Ext.define('App.view.portal.StackedBarPanel', {
 		var gr = me.up().down('grid');
 					
 		if(gr !== undefined) {
-			var storeData = Ext.clone(gr.getStore().getRange());
+			var storeData = Ext.Array.sort(Ext.clone(gr.getStore().getRange()), function(a, b) {
+				return a.data.owner > b.data.owner ? 1 : -1;
+			});
 			
 			me.stackedBarChart.setGraphData(
 				me.normalizeData(

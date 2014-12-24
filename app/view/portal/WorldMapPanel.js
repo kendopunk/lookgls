@@ -23,7 +23,8 @@ Ext.define('App.view.portal.WorldMapPanel', {
 			me.svg = null,
 			me.serverVisibility = Ext.Array.map(App.util.Global.stub.serverFunctions, function(sf) {
 				return sf.name;
-			});
+			}),
+			me.worldMap = null;
 			
 		//////////////////////////////////////////////////
 		// subscribe to IP data generation
@@ -143,11 +144,13 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		// conflicts with active tooltipDiv
 		if(!me.mousingOver) {
 			me.svg.selectAll('circle').call(d3.helper.tooltip().text(function(d, i) {
-				return '<b>' + d.ip + '</b><br>'
-					+ d.owner + '<br>'
-					+ d.serverFunction + '<br>'
-					+ d.latitude + '/' + d.longitude + '<br>'
-					+ '['
+				return '<span style="color:#EEEEEE;font-weight:bold">' + d.ip + '</span><br>'
+					+ '<span style="color:#FFCC33;font-weight:bold">' + d.location + '</span><br>'
+					+ d.owner + ' ' + d.serverFunction + '<br>'
+					+ Ext.util.Format.number(d.latitude, '0.000')
+					+ '/'
+					+ Ext.util.Format.number(d.longitude, '0,000')
+					+ '<br>['
 					+ Ext.Array.sort(d.virus).join(', ')
 					+ ']';
 			}));
@@ -182,6 +185,32 @@ Ext.define('App.view.portal.WorldMapPanel', {
 			.style('visibility', visibility);
 	},
 	
+	/**
+ 	 * get a random longitude, latitude and location name
+ 	 * so WE CAN AVOID THE WATER !!!!!
+ 	 */
+	getRandomLongLatLocation: function() {
+		var me = this;
+		
+		var randomFeature = me.worldMap.topo[Math.floor(Math.random() * 240) + 1];
+		var arr = Ext.Array.flatten(randomFeature.geometry.coordinates[0]);
+		
+		if(arr.length >= 2) {
+			var randomIndex = Math.floor(Math.random() * arr.length/2) * 2;
+			return {
+				location: randomFeature.properties.name,
+				long: arr[randomIndex],
+				lat: arr[randomIndex+1]
+			};
+		} else {
+			return {
+				location: 'Unknown',
+				long: 0,
+				lat: 0
+			};
+		}
+	},
+
 	/**
 	 * @function
 	 * @description Clear all circles from the chart

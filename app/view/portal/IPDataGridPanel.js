@@ -175,7 +175,7 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 					me.feedStatus.setDisabled(false);
 					me.clearButton.setDisabled(false);
 					me.dataFeedRunning = true;
-				}, 5000, me);
+				}, 1000, me);
 			},
 			scope: me
 		});
@@ -287,7 +287,11 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 			ret = [],
 			vArrLen = App.util.Global.stub.viruses.length;
 			
+		var worldMapPanel = me.up().query('worldMapPanel')[0];
+			
 		for(var i=0; i<2; i++) {
+			
+			var locObj = worldMapPanel.getRandomLongLatLocation();
 		
 			// try to pluck random number of viruses
 			var numViruses = Math.floor(Math.random() * vArrLen) + 1, vdat = [];
@@ -302,8 +306,11 @@ Ext.define('App.view.portal.IPDataGridPanel', {
 				virus: Ext.Array.sort(Ext.Array.unique(vdat)),
 				owner: App.util.Global.stub.owners[Math.floor(Math.random() * App.util.Global.stub.owners.length)].fullName,
 				serverFunction: App.util.Global.stub.serverFunctions[Math.floor(Math.random() * App.util.Global.stub.serverFunctions.length)].name,
-				latitude: App.util.Global.ip.genRandomLatitude(),
-				longitude: App.util.Global.ip.genRandomLongitude()
+				location: locObj.location,
+				longitude: locObj.long,
+				latitude: locObj.lat
+				//latitude: App.util.Global.ip.genRandomLatitude(),
+				//longitude: App.util.Global.ip.genRandomLongitude()
 			});
 		}
 

@@ -4,6 +4,7 @@
 		"virus": ["APT1", "Botnet"],
 		"owner": "TMQ Financial",
 		"serverFunction": "web server",
+		"location": "US",
 		"latitude": 39.290385,
 		"longitude": -76.612189
 	}, {
@@ -11,6 +12,7 @@
 		"virus": ["Botnet", "Spam", "StealCreds"],
 		"owner": "Anderson Services",
 		"serverFunction": "ftp server",
+		"location": "US",
 		"latitude": 39.758948,
 		"longitude": -84.191607 
 	}, {
@@ -18,6 +20,7 @@
 		"virus": ["Spam"],
 		"owner": "Anderson Services",
 		"serverFunction": "mail server",
+		"location": "China",
 		"latitude": 38.051009,
 		"longitude": 114.463166
 	}]
