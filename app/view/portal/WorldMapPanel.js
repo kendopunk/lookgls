@@ -18,7 +18,6 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		var me = this;
 		
 		me.eventRelay = Ext.create('App.util.MessageBus'),
-			me.mousingOver = false,
 			me.rawData = [],
 			me.svg = null,
 			me.serverVisibility = Ext.Array.map(App.util.Global.stub.serverFunctions, function(sf) {
@@ -56,6 +55,8 @@ Ext.define('App.view.portal.WorldMapPanel', {
 			dock: 'top',
 			items: [
 				{xtype: 'tbspacer', width: 10},
+				{xtype: 'tbtext', text: '<b>Server Filter:</b>'},
+				{xtype: 'tbspacer', width: 5},
 				serverButtons
 			]
 		}];
@@ -110,6 +111,11 @@ Ext.define('App.view.portal.WorldMapPanel', {
  	 */
 	renderIpData: function(dat) {
 		var me = this;
+		
+		var cs = me.worldMap.currentScale,
+			ct = me.worldMap.currentTranslate;
+			
+		var rad = me.mapCircleRadius / cs;
 	
 		Ext.each(dat, function(d) {
 			me.rawData.push(d);
@@ -122,14 +128,10 @@ Ext.define('App.view.portal.WorldMapPanel', {
 				.attr('cy', function(d) {
 					return me.worldMap.getMapCoords(d.longitude, d.latitude)[1];
 				})
-				.on('mouseover', function() {
-					me.mousingOver = true;
+				.attr('r', rad)
+				.style('stroke', function() {
+					return cs > 1 ? 'none' : '#555555';
 				})
-				.on('mouseout', function() {
-					me.mousingOver = false;
-				})
-				.attr('r', me.mapCircleRadius)
-				.style('stroke', '#555555')
 				.style('stroke-width', .75)
 				.style('visibility', function(d, i) {
 					return me.serverVisibility.indexOf(d.serverFunction) >= 0 ? 'visible' : 'hidden';
@@ -138,23 +140,28 @@ Ext.define('App.view.portal.WorldMapPanel', {
 					return Ext.Array.filter(App.util.Global.stub.serverFunctions, function(sf) {
 						return sf.name == d.serverFunction;
 					})[0].color;
-				});
+				})
+				.on('mouseover', function() {
+					d3.select(this).style('opacity', .5);
+				})
+				.on('mouseout', function() {
+					d3.select(this).style('opacity', 1);
+				})
+				.attr('transform', function() {
+					return 'translate(' + ct  + ')scale(' + cs + ')';
+				})
+				.call(d3.helper.tooltip().text(function(d, i) {
+					return '<span style="color:#EEEEEE;font-weight:bold">' + d.ip + '</span><br>'
+						+ '<span style="color:#FFCC33;font-weight:bold">' + d.location + '</span><br>'
+						+ d.owner + ' ' + d.serverFunction + '<br>'
+						+ Ext.util.Format.number(d.latitude, '0.000')
+						+ '/'
+						+ Ext.util.Format.number(d.longitude, '0,000')
+						+ '<br>['
+						+ Ext.Array.sort(d.virus).join(', ')
+						+ ']';
+				}));
 		}, me);
-		
-		// conflicts with active tooltipDiv
-		if(!me.mousingOver) {
-			me.svg.selectAll('circle').call(d3.helper.tooltip().text(function(d, i) {
-				return '<span style="color:#EEEEEE;font-weight:bold">' + d.ip + '</span><br>'
-					+ '<span style="color:#FFCC33;font-weight:bold">' + d.location + '</span><br>'
-					+ d.owner + ' ' + d.serverFunction + '<br>'
-					+ Ext.util.Format.number(d.latitude, '0.000')
-					+ '/'
-					+ Ext.util.Format.number(d.longitude, '0,000')
-					+ '<br>['
-					+ Ext.Array.sort(d.virus).join(', ')
-					+ ']';
-			}));
-		}
 	},
 	
 	/**
@@ -193,6 +200,7 @@ Ext.define('App.view.portal.WorldMapPanel', {
 		var me = this;
 		
 		var randomFeature = me.worldMap.topo[Math.floor(Math.random() * 240) + 1];
+		
 		var arr = Ext.Array.flatten(randomFeature.geometry.coordinates[0]);
 		
 		if(arr.length >= 2) {

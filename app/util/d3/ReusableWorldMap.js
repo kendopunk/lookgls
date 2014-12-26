@@ -24,6 +24,8 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 		strokeWidth: 1,
 		strokeOver: 'white'
 	},
+	currentScale: 1,
+	currentTranslate: [0,0],
 	eventRelay: null,
 	gPath: null,
 	graticule: d3.geo.graticule(),
@@ -96,6 +98,9 @@ Ext.define('App.util.d3.ReusableWorldMap', {
 					h * (s-1) + h * s,
 					Math.max(height  * (1-s) - h * s, t[1])
 				);
+				
+				me.currentScale = s;
+				me.currentTranslate = t;
 				
 				// zoom, scale map, scale circles
 				me.zoom.translate(t);

@@ -132,9 +132,14 @@ Ext.define('App.view.portal.StackedBarPanel', {
 							
 							me.stackedBarChart.setGraphData(
 								me.normalizeData(
-									Ext.Array.map(storeData, function(rng) {
-										return rng.data;
-									})
+									Ext.Array.sort(
+										Ext.Array.map(storeData, function(rng) {
+											return rng.data;
+										}),
+										function(o1, o2) {
+											return o1.owner > o2.owner ? 1 : -1;
+										}
+									)
 								)
 							);
 							
