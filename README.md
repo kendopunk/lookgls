@@ -17,5 +17,3 @@ Place under DOCUMENT ROOT of Apache2 installation.  No external dependencies req
 * Internet Explorer 11
 * Firefox 34
 * Chrome 39
-
-http://www.smarmless.com/lookgls/index.html
